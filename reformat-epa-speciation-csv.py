@@ -35,6 +35,7 @@ species = {88403: 'SO4_ugm3',
            88380: 'EC_IMPROVE_TOR_ugm3',
            88502: 'PM25_grav_ugm3',
            68105: 'Temp_C',
+           68108: 'Pres_mmHg',
            88101: 'PM25_frm_ugm3'}
 
 # these species need sampler determined from the "method" variable
