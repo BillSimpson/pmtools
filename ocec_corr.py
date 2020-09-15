@@ -85,14 +85,14 @@ spec_data['PM25_corr_ugm3'] = np.nanmean((spec_data['PM25_grav_corr_ugm3'], spec
 full_oc = 'OC_'+ocec_meas_type+'_ugm3'
 full_ec = 'EC_'+ocec_meas_type+'_ugm3'
 if ocec_meas_type == 'NIOSH_TOT_SASS':
-   spec_data['EC_corr_ugm3'] = spec_data[full_ec] - 0.025
-   spec_data['TC_corr_ugm3'] = spec_data[full_oc] - 1.212 + spec_data['EC_corr_ugm3']
+   print ('OC/EC method not yet supported')
+   exit(1)
 if ocec_meas_type == 'IMPROVE_TOR_SASS':
-   spec_data['EC_corr_ugm3'] = 0.800 * spec_data[full_ec]
-   spec_data['TC_corr_ugm3'] = 1.000 * ( spec_data[full_oc] - 0.687 + spec_data[full_ec] )
+   spec_data['EC_corr_ugm3'] = spec_data[full_ec] - 0.025
+   spec_data['TC_corr_ugm3'] = ( spec_data[full_oc] - 0.687 + spec_data['EC_corr_ugm3'] ) / 1.267
 if ocec_meas_type == 'IMPROVE_TOR_URG':
-   spec_data['EC_corr_ugm3'] = 0.800 * spec_data[full_ec]
-   spec_data['TC_corr_ugm3'] = 1.268 * ( spec_data[full_oc] - 0.137 + spec_data[full_ec] )
+   spec_data['EC_corr_ugm3'] = spec_data[full_ec]
+   spec_data['TC_corr_ugm3'] = spec_data[full_oc] - 0.137 + spec_data[full_ec] 
 # now calculate OC = TC - EC
 spec_data['OC_corr_ugm3'] = spec_data['TC_corr_ugm3'] - spec_data['EC_corr_ugm3']
 
@@ -108,6 +108,8 @@ spec_data['NH4_corr_ugm3'] = spec_data['NH4_ugm3'] - 0.006  ## Ammonium
 # calculate inorganics and recon
 spec_data['IM_ugm3'] = spec_data['SO4_corr_ugm3'] + spec_data['NO3_corr_ugm3'] + spec_data['NH4_corr_ugm3']
 spec_data['recon_ugm3'] = spec_data['OCM_ugm3'] + spec_data['EC_corr_ugm3'] + spec_data['IM_ugm3'] + spec_data['OPM_ugm3']
+spec_data['recon_OM_ugm3'] = spec_data['PM25_corr_ugm3'] - ( spec_data['EC_corr_ugm3'] + spec_data['IM_ugm3'] + spec_data['OPM_ugm3'] )
+
 
 # calculate total potential sulfate NOTE this needs 24-hour averaged SO2, not there yet
 # spec_data['SO4_tot_pot_ugm3'] = spec_data['SO4_corr_ugm3'] + SO2sulfate(spec_data['SO2_ppb'],spec_data['Temp_C'])
@@ -115,8 +117,10 @@ spec_data['recon_ugm3'] = spec_data['OCM_ugm3'] + spec_data['EC_corr_ugm3'] + sp
 spec_data['NH4_neut_ugm3'] = 0.375 * spec_data['SO4_corr_ugm3'] + 0.290 * spec_data['NO3_corr_ugm3']
 
 PM25_sel = np.copy(spec_data['PM25_corr_ugm3'])
-low_mask = PM25_sel < 5
+low_mask = [ val < 5 or np.isnan(val) for val in PM25_sel]
 PM25_sel[low_mask] = np.nan
+PM25_wgt = np.copy(spec_data['PM25_corr_ugm3'])
+PM25_wgt[low_mask] = 0
 spec_data['SO4_PM25_ratio'] = spec_data['SO4_corr_ugm3'] / PM25_sel
 spec_data['NO3_PM25_ratio'] = spec_data['NO3_corr_ugm3'] / PM25_sel
 spec_data['OC_PM25_ratio'] = spec_data['OC_corr_ugm3'] / PM25_sel
@@ -125,7 +129,13 @@ spec_data['K_PM25_ratio'] = spec_data['K_ugm3'] / PM25_sel
 
 for colname in spec_data.columns:
    if colname.find('ratio') >= 0:
-      print('Mean for {:} is {:.4f}'.format(colname,spec_data[colname].mean()))
+      ratio_mask = np.isnan(spec_data[colname])
+      full_mask = np.logical_or(ratio_mask,low_mask)
+      newyear_mask = [dt == datetime.datetime(dt.year,1,1) or dt == datetime.datetime(dt.year,12,31)
+                      for dt in spec_data.index]
+      full_mask = np.logical_or(full_mask,newyear_mask)
+      masked_col = np.ma.MaskedArray(spec_data[colname], mask = full_mask)
+      print('PM weighted average for {:} is {:.4f}'.format(colname,np.ma.average(masked_col,weights=PM25_wgt)))
 
 print ('writing file <{:}>'.format(outfilename))
 spec_data.to_csv(outfilename, sep = '\t', na_rep = 'NaN', date_format = outputdtformat)

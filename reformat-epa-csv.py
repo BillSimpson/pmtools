@@ -7,8 +7,8 @@ import os
 
 inputdtformat = '%Y-%m-%d %H:%M'
 outputdtformat = '%Y-%m-%d %H:%M:%S'
-selected_pc = 88502
-selected_name = 'bam_pm25_ugm3'
+selected_pc = 88501
+selected_name = 'raw_bam_pm25_ugm3'
 
 try:
     filename = sys.argv[1]

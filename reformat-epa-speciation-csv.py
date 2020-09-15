@@ -55,6 +55,15 @@ site = {34: 'ncore',
         4102: 'uaftg',
         4103: 'uafrr'}
 
+# dictionary defining the site code to UAF sitenumber
+uafsite = {10: 0,
+           34: 1,
+           35: 2,
+           40: 3,
+           4101: 3,
+           4102: 4,
+           4103: 5}
+
 try:
     filename = sys.argv[1]
     fileroot, fileext = os.path.splitext(filename)
@@ -102,6 +111,7 @@ if len(file_sites) > 1:
     exit(1)
 sitename = site[list(file_sites)[0]]
 print ('data are at site <{:}>'.format(sitename))
+uafsitenum = uafsite[list(file_sites)[0]]
 
 # determine years in the file
 years = set([dt.year for dt in epa_data['sampledate']])
@@ -132,7 +142,14 @@ for selected_pc in species:
                     new_series.name = newname.replace('_ugm3','_'+sampler+'_ugm3')
     print('extracting data from poc {:} for {:}, found {:} data points'.format(curr_poc,new_series.name,len(new_series)))
     if firsttime:
+        # convert series to dataframe
         full_df = new_series.to_frame()
+        # add columns for sitename and num then reverse column order
+        full_df['uafsitenum'] = uafsitenum
+        full_df['sitename'] = sitename
+        cols = full_df.columns.tolist()
+        cols.reverse()
+        full_df = full_df[cols]
         firsttime = False
     else:
         new_df = new_series.to_frame()
