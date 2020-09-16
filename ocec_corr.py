@@ -107,7 +107,9 @@ spec_data['NH4_corr_ugm3'] = spec_data['NH4_ugm3'] - 0.006  ## Ammonium
 
 # calculate inorganics and recon
 spec_data['IM_ugm3'] = spec_data['SO4_corr_ugm3'] + spec_data['NO3_corr_ugm3'] + spec_data['NH4_corr_ugm3']
+spec_data['IM_S_ugm3'] = 3*spec_data['S_ugm3'] + spec_data['NO3_corr_ugm3'] + spec_data['NH4_corr_ugm3']
 spec_data['recon_ugm3'] = spec_data['OCM_ugm3'] + spec_data['EC_corr_ugm3'] + spec_data['IM_ugm3'] + spec_data['OPM_ugm3']
+spec_data['recon_S_ugm3'] = spec_data['OCM_ugm3'] + spec_data['EC_corr_ugm3'] + spec_data['IM_S_ugm3'] + spec_data['OPM_ugm3']
 spec_data['recon_OM_ugm3'] = spec_data['PM25_corr_ugm3'] - ( spec_data['EC_corr_ugm3'] + spec_data['IM_ugm3'] + spec_data['OPM_ugm3'] )
 
 
