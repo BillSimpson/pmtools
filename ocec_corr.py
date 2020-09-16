@@ -85,8 +85,8 @@ spec_data['PM25_corr_ugm3'] = np.nanmean((spec_data['PM25_grav_corr_ugm3'], spec
 full_oc = 'OC_'+ocec_meas_type+'_ugm3'
 full_ec = 'EC_'+ocec_meas_type+'_ugm3'
 if ocec_meas_type == 'NIOSH_TOT_SASS':
-   print ('OC/EC method not yet supported')
-   exit(1)
+   spec_data['EC_corr_ugm3'] = spec_data[full_ec] / 0.80
+   spec_data['TC_corr_ugm3'] = ( spec_data[full_oc] - 1.212 + spec_data['EC_corr_ugm3'] ) / 1.267
 if ocec_meas_type == 'IMPROVE_TOR_SASS':
    spec_data['EC_corr_ugm3'] = spec_data[full_ec] - 0.025
    spec_data['TC_corr_ugm3'] = ( spec_data[full_oc] - 0.687 + spec_data['EC_corr_ugm3'] ) / 1.267
